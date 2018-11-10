@@ -1,0 +1,328 @@
+---
+title: "STAT547:Homework-06"
+output: 
+  html_document:
+    keep_md: TRUE
+---
+
+#### Load the gapminder data set
+
+
+
+Load the Gapminder data set and also load ggplot2 so that plots can be made.
+
+
+
+```{r}
+library(gapminder)
+library(ggplot2)
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(stringr))
+suppressPackageStartupMessages(library(forcats))
+suppressPackageStartupMessages(library(purrr))
+suppressPackageStartupMessages(library(repurrrsive))
+```
+
+
+
+
+The following two tasks were performed for this homework:
+
+
+
+#### **Task1: Read and work the exercises in the Strings chapter or R for Data Science**
+
+
+**Exercise: 14.2.5**
+
+
+**1. In code that doesn’t use stringr, you’ll often see paste() and paste0(). What’s the difference between the two functions? What stringr function are they equivalent to? How do the functions differ in their handling of `NA`?**
+
+
+`Answer`: The difference between `paste()` and `paste0()` is that paste() uses space between two strings while paste0() does not. They are equivalent to `str_c()` function. If either paste() or paste0() is used with NA, then `NA` becomes the part of the string but with `str_c()`, the output itself is NA. 'For example:`
+
+
+
+```{r}
+paste("Divta", "Pal")
+```
+
+```{r}
+paste0("Divta", "Pal")
+```
+
+```{r}
+str_c("DivitaPal", NA)
+```
+
+```{r}
+paste("DivitaPal", NA)
+```
+
+
+
+**2. In your own words, describe the difference between the sep and collapse arguments to str_c().**
+
+
+`Answer`: The `sep` function seperates two or more strings whereas `collapse` function combines two or more strings into one single string. `For example:`
+
+
+```{r}
+str_c("x", "y", sep = ",")
+```
+```{r}
+str_c("x","y", collapse = ",")
+```
+
+
+
+**3. Use str_length() and str_sub() to extract the middle character from a string. What will you do if the string has an even number of characters?**
+
+
+`Answer:`
+
+
+```{r}
+name <- 'Divita' #length of string is even
+
+str_sub(name,str_length(name)/2, str_length(name)/2+1 )
+
+```
+
+
+
+
+**4. What does str_wrap() do? When might you want to use it?**
+
+`Answer:` The function `str_wrap()` seperate one paragraph into number of lines.
+
+```{r}
+paragraph <- "R is a programming language and free software environment for statistical computing and graphics supported by the R Foundation for Statistical Computing. The R language is widely used among statisticians and data miners for developing statistical software and data analysis."
+
+str_wrap(paragraph)
+```
+
+
+
+**5. What does str_trim() do? What’s the opposite of str_trim()?**
+
+
+`Answer:` It deletes TAB, heading and tailing spaces in a string.
+
+
+
+
+
+**Exercise: 14.3.1.1**
+
+
+**1. Explain why each of these strings don’t match a \: "\", "\\", "\\\".**
+
+
+
+`Answer:` `\` is used as an escape character. '\\' is used as an escape charater `\` followed by a backslash `\` which means a single backslash. `\\\` is used a backslash followed by an escape charater followed by a backslash which is again used as a backslash.
+
+
+**2. How would you match the sequence "'\?**
+
+
+`Answer:` In order to match the sequence, the character needs to be enclosed within double coats and then the double coats needs to be escaped by backslash `\"'\"`
+
+
+
+
+
+**Exercise: 14.3.2.1**
+
+
+**1. How would you match the literal string "$^$"?**
+
+
+`Answer:` We need to use the character `\\$\\^\\$` to match the string. `For example"`
+
+```{r}
+str_view("Divita$^$Pal", pattern="\\$\\^\\$", match = TRUE)
+```
+
+
+
+
+**2. Given the corpus of common words in stringr::words, create regular expressions that find all words that:**
+
+`Start with “y”`
+
+```{r}
+str_view(stringr::words, pattern = "^y", match = TRUE)
+```
+
+
+`End with x`
+
+
+```{r}
+str_view(stringr::words, pattern = "x$", match = TRUE)
+```
+
+`Are exactly three letters long`
+
+```{r}
+str_view(stringr::words, pattern = "^.{3}$", match = TRUE)
+```
+
+`Have seven letters or more`
+
+```{r}
+str_view(stringr::words, pattern = "\\b.......", match = TRUE)
+```
+
+
+
+
+**Exercise: 14.3.3.1**
+
+
+**1. Create regular expressions to find all words that:**
+
+`Answer:`
+
+
+`Start with a vowel`
+
+```{r}
+str_view(stringr::words, pattern = "^[a|e|i|o|u]", match = TRUE)
+```
+
+
+
+`End with ing or ise`
+
+```{r}
+str_view(stringr::words, pattern = "ing$|ise$", match = TRUE)
+```
+
+
+**2. Empirically verify the rule “i before e except after c**
+
+`Answer:`
+
+
+```{r}
+str_view(stringr::words, pattern = "[^c]ie|cei", match = TRUE)
+```
+
+
+
+**3. Is “q” always followed by a “u”**
+
+
+
+```{r}
+str_view(stringr::words, pattern = "q[^u]", match = TRUE)
+```
+
+
+
+**Exercise: 14.4.2**
+
+
+**1. For each of the following challenges, try solving it by using both a single regular expression, and a combination of multiple str_detect() calls.**
+
+`Find all words that start or end with x`
+
+```{r}
+str_detect(stringr::words, pattern = "^x|x$")
+```
+
+
+`Find all words that start with a vowel and end with a consonant`
+
+
+```{r}
+str_subset(stringr::words, pattern = "^[aeiou].*[aeiou$]")
+```
+
+
+
+
+
+#### **Task2: Writing Functions**
+
+
+
+In this exercise, we select a country as `Kenya` and obtain a plot of `year` versus `lifeExp` to see the trend. An attempt was made to fit the linear regression model was initially amde by using the function [described here](http://stat545.com/block012_function-regress-lifeexp-on-year.html)
+
+
+```{r}
+select_country <- gapminder %>% 
+  filter(country == "Kenya")
+
+knitr::kable(select_country) #display output for only Italy
+```
+
+
+
+
+The above table gives the data for `Kenya` and we use it visualise the trend between lifeExp and year by fitting a linear regression.
+
+
+
+
+```{r}
+linear_fit <- function(data, offset = 1977) {
+  the_fit <- lm(lifeExp ~ I(year - offset), data)
+  coef(the_fit)
+  setNames(coef(the_fit), c("intercept", "slope"))
+}
+linear_fit(select_country)
+
+
+plot <- ggplot(select_country, aes(year, lifeExp))
+plot + geom_point() + geom_smooth(method = "lm", se = FALSE)
+```
+
+
+It can be seen that the linear plot does not fit the data and therefore as a next attempt, quadratic regression was done. The function developed was based on the one from linear regression.
+
+
+```{r}
+quad_fit <- function(data, offset = 1977) {
+  the_fit <- lm(lifeExp ~ I(year - offset) + I((year- offset)^2), data)
+  coef(the_fit)
+  setNames(coef(the_fit), c("intercept", "slope", "sq term"))
+}
+
+gapminder %>% filter(country == "Kenya") %>% quad_fit()
+```
+
+
+
+
+Lets try out some different countries.
+
+
+```{r}
+quad_fit(gapminder %>% filter(country == "Zimbabwe"))
+```
+
+
+The quadratic regression well fits the trens for Zimbabwe.
+
+
+Lets check ``India`
+
+
+```{r}
+quad_fit(gapminder %>% filter(country == "India"))
+linear_fit(gapminder %>% filter(country == "India"))
+```
+
+
+It can be seen that for India the squared term is almost zero therefore, the best fit for its trend might be a linear regression fit. 
+
+
+Thus, any country can be tested for regression analysis by the use of the functions developed above.
+
+
+
+
